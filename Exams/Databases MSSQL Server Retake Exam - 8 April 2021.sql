@@ -179,7 +179,3 @@ BEGIN
 		THROW
 	END CATCH
 END
-
-EXEC usp_AssignEmployeeToReport 30, 1
-EXEC usp_AssignEmployeeToReport 17, 2
-DROP PROC usp_AssignEmployeeToReport
