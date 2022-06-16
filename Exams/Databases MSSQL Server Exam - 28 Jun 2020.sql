@@ -128,3 +128,35 @@ SELECT sub.JobDuringJourney, sub.FullName, sub.ranked AS JobRank
 			JOIN TravelCards AS tc ON tc.ColonistId = c.Id
 	) AS sub
 	WHERE sub.ranked = 2
+
+
+-- 11. Get Colonist Count
+CREATE FUNCTION udf_GetColonistsCount(@PlanetName VARCHAR (30))
+RETURNS INT
+AS
+BEGIN
+	RETURN (SELECT COUNT(c.Id) FROM Planets AS p
+		JOIN Spaceports AS s ON s.PlanetId = p.Id
+		JOIN Journeys AS j ON j.DestinationSpaceportId = s.Id
+		JOIN TravelCards AS tc ON tc.JourneyId = j.Id
+		JOIN Colonists AS c ON c.Id = tc.ColonistId
+			WHERE p.[Name] = @PlanetName)
+END
+
+
+-- 12. Change Journey Purpose
+CREATE PROC  usp_ChangeJourneyPurpose(@JourneyId INT, @NewPurpose VARCHAR(MAX))
+AS
+BEGIN
+	IF((SELECT Id FROM Journeys WHERE Id = @JourneyId) IS NULL)
+		THROW 50001, 'The journey does not exist!', 1
+
+	DECLARE @currentJourneyPurpose VARCHAR(MAX) = (SELECT Purpose FROM Journeys WHERE Id = @JourneyId)
+
+	IF(@currentJourneyPurpose = @NewPurpose)
+		THROW 50002, 'You cannot change the purpose!', 1
+
+	UPDATE Journeys
+		SET Purpose = @NewPurpose
+		WHERE Id = @JourneyId
+END
